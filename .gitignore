@@ -1,0 +1,43 @@
+# 忽略当前目录下的所有子文件夹
+*/
+
+# 显式保留 .gitignore 和 README.md (防止误伤，虽通常不需要但保险)
+!.gitignore
+!README.md
+
+# 1. 忽略 R 的临时文件和工作空间
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# 2. 忽略所有大型数据文件 (生信项目必须配置)
+*.csv
+*.txt
+*.tsv
+*.gz
+*.zip
+*.vcf
+*.bgen
+*.bed
+*.bim
+*.fam
+
+# 3. 忽略图片结果（通常图片不需要版本控制，除非是最终稿）
+*.pdf
+*.png
+*.jpg
+*.tiff
+
+# 4. 忽略特定的数据文件夹 (根据你之前的问题)
+outcome/
+exposure/
+rawinstruments/
+/home/publicdata/  # 防止软连接被误追踪内容
+data/
+results/
+temp/
+
+# 5. 系统文件
+.DS_Store
+*.log

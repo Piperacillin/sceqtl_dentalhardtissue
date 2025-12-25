@@ -1,0 +1,1 @@
+install.packages("/home/piperacillin/projects/batch_MR/sceqtl_pulp/MafDb.1Kgenomes.phase3.hs37d5_3.10.0.tar.gz", repos = NULL, type = "source")
