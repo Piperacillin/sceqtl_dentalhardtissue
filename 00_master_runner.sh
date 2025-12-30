@@ -2,27 +2,9 @@
 #bash 00_master_runner.sh 2>&1 | tee master_runner.log
 
 # ================= 配置 =================
-EXPOSURE_LIST=(
-    "onek1k"
-    "1mscblood"
-)
+# 1. 引入配置文件 (核心修改)
+source ./aa_discovery_config.sh
 
-OUTCOME_LIST=(
-    "K11_ABRASION"
-    "K11_EMBIMPACT_TEETH"
-    "K11_EROSION_INCLAVO"
-    "K11_ATTRITION"
-    "K11_HYPO_ONLY"
-    "K11_SUPNUM_ONLY_INCLAVO"
-    "K11_CARIES_1_OPER_ONLYAVO"
-    "K11_HYPOPLASIA_ENAMEL_INCLAVO"
-    "K11_MIH"
-    "K11_RESORPTION"
-)
-
-# 这里的数字作为"上限"。
-# 实际运行并发数 = min(GLOBAL_MAX_JOBS, 系统允许内存能跑的数量)
-export GLOBAL_MAX_JOBS=69 
 
 START_TIME=$(date)
 echo "Master Pipeline Started at: $START_TIME"
