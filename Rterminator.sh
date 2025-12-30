@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 使用 pgrep 获取进程 ID
-pids=$(pgrep -f '/usr/lib/R/bin/exec/R')
+pids=$(pgrep -f '/usr/local/lib/R/bin/exec/R')
 
 # 检查是否有任何匹配的进程
 if [ -z "$pids" ]; then
