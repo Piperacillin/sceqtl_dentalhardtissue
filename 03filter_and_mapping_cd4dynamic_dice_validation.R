@@ -55,7 +55,7 @@ if (!all(required_cols %in% colnames(msc_data))) {
 # 筛选: FDR < 0.05 且 cell_type 为 CD4T
 # 注意: 之前的 bash 脚本生成的 cell_type 列内容可能带有引号或空格，这里做一下清理比较稳妥
 target_genes_df <- msc_data %>%
-  filter(as.numeric(FDR) < 0.05) %>%
+  filter(as.numeric(FDR) < 0.05) %>% ####筛选标准是FDR<0.05####
   filter(str_detect(cell_type, "CD4T")) %>% # 使用 str_detect 容错性更好 (e.g. "CD4T" or "CD4T_activated")
   select(gene_symbol) %>%
   distinct()

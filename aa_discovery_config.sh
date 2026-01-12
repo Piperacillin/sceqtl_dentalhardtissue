@@ -8,6 +8,11 @@ EXPOSURE_LIST=(
     "1mscblood"
 )
 
+EXPOSURE_VAL_LIST=(
+    "CD4_Dynamic"
+    "dice"
+)
+
 OUTCOME_LIST=(
     "K11_ABRASION"
     "K11_EMBIMPACT_TEETH"
