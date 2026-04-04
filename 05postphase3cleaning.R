@@ -857,11 +857,47 @@ message(">>> Performing Full Join (One-to-Many)...")
 # OneK1K (静态) 自动匹配 1mscblood (动态) 的多个时间点
 dt_merged <- full_join(dt_msc_renamed, dt_k1k_renamed, by = join_keys)
 
+# 5. [核心新增] 清洗与去重 (Scoring & Deduplication) ----------------------------
+message(">>> Cleaning Gene Symbols and Deduplicating...")
 
-# 5. 生成分析辅助列 (回答验证问题) ----------------------------------------------
+dt_cleaned <- dt_merged %>%
+  mutate(
+    # 5.1 备份原始基因名 (方便追溯)
+    raw_gene_symbol = gene_symbol,
+    
+    # 5.2 清洗基因名：去除 .数字 后缀
+    gene_symbol = str_remove(gene_symbol, "\\.\\d+$"),
+    
+    # 5.3 计算验证强度得分 (Score)
+    # 逻辑：优先保留"阳性结果最多"的行
+    # 注意：列名现在带有后缀，需对应修改
+    validation_score = 
+      (if_else(is_fdr_sig_1mscblood == TRUE, 2, 0, missing = 0)) +
+      (if_else(dynamic_eqtl_status_1mscblood == "PASS", 3, 0, missing = 0)) +
+      (if_else(is_fdr_sig_onek1k == TRUE, 2, 0, missing = 0)) +
+      (if_else(dice_validation_onek1k == "PASS", 1, 0, missing = 0)) +
+      (if_else(cd4dynamic_1mscblood == "PASS", 1, 0, missing = 0)),
+    
+    # 5.4 辅助排序：得分相同时，优先保留 FDR 更小的 (用 1-FDR 模拟)
+    fdr_tie_breaker = coalesce(1 - FDR_1mscblood, 0) + coalesce(1 - FDR_onek1k, 0)
+  ) %>%
+  
+  # 5.5 执行去重
+  # 按照 清洗后的基因名 + Outcome + Lineage 分组
+  # (同一个基因在同一个谱系同一个结局下，只保留一行)
+  group_by(gene_symbol, outcome, lineage) %>%
+  arrange(desc(validation_score), desc(fdr_tie_breaker)) %>%
+  slice(1) %>%
+  ungroup()
+
+message(paste0("    Rows after cleaning & deduplication: ", nrow(dt_cleaned)))
+message(paste0("    Removed duplicates: ", nrow(dt_merged) - nrow(dt_cleaned)))
+
+
+# 6. 生成分析辅助列 (回答验证问题) ----------------------------------------------
 message(">>> Generating Summary Columns...")
 
-dt_final_project <- dt_merged %>%
+dt_final_project <- dt_cleaned %>%
   mutate(
     # Q1: 哪些基因两个表都有？---------------------------------------------------
     presence_status = case_when(
@@ -874,15 +910,24 @@ dt_final_project <- dt_merged %>%
     # Q2: 动态基因验证情况 ------------------------------------------------------
     # 寻找那些在 1mscblood 动态显著，但在 OneK1K 静态不显著的黄金靶点
     dynamic_validation_in_static = case_when(
+      # --- 动态 (1mscblood) 为主视角的分类 ---
       dynamic_eqtl_status_1mscblood == "PASS" & is_fdr_sig_onek1k == TRUE ~ "Dynamic_&_Static_Sig",
       dynamic_eqtl_status_1mscblood == "PASS" & is_fdr_sig_onek1k == FALSE ~ "Dynamic_Specific (Unique)",
       dynamic_eqtl_status_1mscblood == "PASS" & is.na(is_fdr_sig_onek1k) ~ "Dynamic_Only (Not in OneK1K)",
-      TRUE ~ "Not_Dynamic_Hit"
+      
+      # --- 静态 (OneK1K) 为主视角的分类 (新增) ---
+      # 1. Static_Specific: OneK1K 显著，但 1mscblood 有数据且未通过动态验证
+      is_fdr_sig_onek1k == TRUE & (dynamic_eqtl_status_1mscblood %in% c("FAIL", "Not_Sig", "Baseline")) ~ "Static_Specific (Unique)",
+      
+      # 2. Static_Only: OneK1K 显著，但 1mscblood 完全没数据
+      is_fdr_sig_onek1k == TRUE & (is.na(dynamic_eqtl_status_1mscblood) | dynamic_eqtl_status_1mscblood == "No_UT_Data") ~ "Static_Only (Not in 1mscblood)",
+      
+      TRUE ~ "Other"
     ),
     
     # Q3: 双重外部验证结果 (Dice & CD4) -----------------------------------------
     double_validation_status = case_when(
-      dice_validation_onek1k == "PASS" & cd4dynamic_1mscblood == "PASS" ~ "Double_Pass",
+      dice_validation_onek1k == "PASS" & cd4dynamic_1mscblood == "PASS" ~ "Dice_CD4_Double_Pass",
       dice_validation_onek1k == "PASS" ~ "Dice_Pass_Only",
       cd4dynamic_1mscblood == "PASS" ~ "CD4_Pass_Only",
       TRUE ~ "No_External_Validation"
@@ -904,7 +949,7 @@ select(
 )
 
 
-# 6. 保存与统计 -----------------------------------------------------------------
+# 7. 保存与统计 -----------------------------------------------------------------
 out_file <- "./result/Phase3_Final_Project_Grand_Master_Table.csv"
 message(">>> [Output] Saving Grand Master Table to: ", out_file)
 write.csv(dt_final_project, out_file, row.names = FALSE)
@@ -922,4 +967,97 @@ message("\nReplication Validation Status:")
 print(table(dt_final_project$double_validation_status))
 
 message(">>> Script Complete.")
+
+# 脚本名称: 12_filter_and_subset_external_data.R ------------------------------
+# 功能: 读取已去重的总表 -> 筛选目标基因 -> 截取 eQTLGen/GTEx -> 保存
+# RStudio Note: Simplified version
+
+rm(list = ls()) # 清空环境
+suppressPackageStartupMessages({
+  library(data.table)
+  library(dplyr)
+  library(qs)
+})
+
+# 1. 读取总表 (已去重) ----------------------------------------------------------
+file_grand_master <- "./result/Phase3_Final_Project_Grand_Master_Table.csv"
+if (!file.exists(file_grand_master)) stop("Grand Master Table not found!")
+
+message(">>> Loading Grand Master Table...")
+dt_master <- fread(file_grand_master)
+unique(dt_master$dynamic_validation_in_static)
+# 2. 筛选目标分类基因 -----------------------------------------------------------
+target_categories <- c(
+  "Dynamic_&_Static_Sig",
+  "Dynamic_Specific (Unique)",
+  "Dynamic_Only (Not in OneK1K)",
+  "Static_Specific (Unique)",
+  "Static_Only (Not in 1mscblood)"
+)
+
+message(">>> Filtering genes based on categories: ")
+print(target_categories)
+
+dt_filtered <- dt_master %>%
+  filter(dynamic_validation_in_static %in% target_categories)
+
+# 直接使用 gene_symbol，因为它已经在 Script 11 中清洗干净了 (无 .1 后缀)
+target_gene_list <- unique(dt_filtered$gene_symbol)
+
+message(paste0("    Total unique target genes found: ", length(target_gene_list)))
+
+if(length(target_gene_list) == 0) stop("No genes found matching criteria!")
+
+# 3. 处理 eQTLGen 数据集 --------------------------------------------------------
+message("\n>>> Processing eQTLGen Data...")
+eqtlgen_path_in  <- "./exposure/eqtlgen/eqtlgen_r2_0.2.qs"
+eqtlgen_path_out <- "./exposure/eqtlgen/eqtlgen_r2_0.2_validation.qs"
+
+if (file.exists(eqtlgen_path_in)) {
+  eqtlgen_data <- qread(eqtlgen_path_in)
+  
+  if ("symbol.exposure" %in% colnames(eqtlgen_data)) {
+    eqtlgen_sub <- eqtlgen_data %>% 
+      filter(symbol.exposure %in% target_gene_list)
+  } else if ("gene.exposure" %in% colnames(eqtlgen_data)) {
+    warning("    'symbol.exposure' not found, trying 'gene.exposure'.")
+    eqtlgen_sub <- eqtlgen_data %>% 
+      filter(gene.exposure %in% target_gene_list)
+  } else {
+    stop("    Cannot find gene symbol column in eQTLGen data!")
+  }
+  eqtlgen_sub$tissue <- "Blood"
+  eqtlgen_sub$phenotype.exposure <- paste0(eqtlgen_sub$phenotype.exposure,'_',eqtlgen_sub$tissue)
+  message(paste0("    Rows matched: ", nrow(eqtlgen_sub)))
+  qsave(eqtlgen_sub, eqtlgen_path_out)
+  message(paste0("    Saved to: ", eqtlgen_path_out))
+  rm(eqtlgen_data, eqtlgen_sub); gc()
+} else {
+  warning(paste0("    eQTLGen file not found: ", eqtlgen_path_in))
+}
+
+# 4. 处理 GTEx 数据集 -----------------------------------------------------------
+message("\n>>> Processing GTEx Data...")
+gtex_path_in  <- "./exposure/GTEx/GTEx_r2_0.2.qs" 
+gtex_path_out <- "./exposure/GTEx/GTEx_r2_0.2_validation.qs"
+
+if (file.exists(gtex_path_in)) {
+  gtex_data <- qread(gtex_path_in)
+  
+  if ("gene.exposure" %in% colnames(gtex_data)) {
+    gtex_sub <- gtex_data %>% 
+      filter(gene.exposure %in% target_gene_list)
+  } else {
+    stop("    Cannot find 'gene.exposure' column in GTEx data!")
+  }
+  
+  message(paste0("    Rows matched: ", nrow(gtex_sub)))
+  qsave(gtex_sub, gtex_path_out)
+  message(paste0("    Saved to: ", gtex_path_out))
+  rm(gtex_data, gtex_sub); gc()
+} else {
+  warning(paste0("    GTEx file not found: ", gtex_path_in))
+}
+
+message("\n>>> Script Complete.")
 

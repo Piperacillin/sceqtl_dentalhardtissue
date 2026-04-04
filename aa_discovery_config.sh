@@ -13,6 +13,12 @@ EXPOSURE_VAL_LIST=(
     "dice"
 )
 
+# Phase 4 Bulk 验证数据集列表
+EXPOSURE_PHASE4_LIST=(
+    "eqtlgen"
+    "GTEx"
+)
+
 OUTCOME_LIST=(
     "K11_ABRASION"
     "K11_EMBIMPACT_TEETH"
