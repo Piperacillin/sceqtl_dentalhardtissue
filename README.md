@@ -17,6 +17,8 @@
 <sup>*</sup> **Correspondence:** Prof. Lan Zhang (zlnancy914@sina.com) and Dr. Liu Liu (liul@scu.edu.cn, Twitter: @LiuLiu_DDS).  
 
 <sup>1</sup> *State Key Laboratory of Oral Diseases & National Center for Stomatology & National Clinical Research Center for Oral Diseases, West China Hospital of Stomatology, Sichuan University, Chengdu 610041, China*
+<sup>2</sup> *Department of Orthodontics, West China Hospital of Stomatology, Sichuan University.*  
+<sup>3</sup> *Department of Conservative Dentistry and Endodontics, West China Hospital of Stomatology, Sichuan University.*
 
 ---
 
