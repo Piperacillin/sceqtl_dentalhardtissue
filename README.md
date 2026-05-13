@@ -16,7 +16,7 @@
 <sup>†</sup> These authors contributed equally to this article.  
 <sup>#</sup> **Correspondence:** Prof. Lan Zhang (zlnancy914@sina.com) and Dr. Liu Liu (liul@scu.edu.cn, Twitter: @LiuLiu_DDS).  
 
-<sup>1</sup> *State Key Laboratory of Oral Diseases & National Center for Stomatology & National Clinical Research Center for Oral Diseases, West China Hospital of Stomatology, Sichuan University, Chengdu 610041, China*
+<sup>1</sup> *State Key Laboratory of Oral Diseases & National Center for Stomatology & National Clinical Research Center for Oral Diseases, West China Hospital of Stomatology, Sichuan University.*  
 <sup>2</sup> *Department of Orthodontics, West China Hospital of Stomatology, Sichuan University.*  
 <sup>3</sup> *Department of Conservative Dentistry and Endodontics, West China Hospital of Stomatology, Sichuan University.*
 
@@ -80,7 +80,7 @@ scEqtl-DentalHT-MR/
 If you utilize our pipeline architecture, scoring system, codes, or conceptually build upon this workflow, please cite our pending manuscript alongside the foundational frameworks:
 
 **Primary Reference:**
-1. [Tianyi Wang, Qi Xing], Liu Liu, *et al.* (2024). Single-Cell Gene Expression and Dental Hard Tissue Disease: A Mendelian Randomization Study. *Journal of Dental Research* [Under Review].
+1. [Tianyi Wang, Qi Xing], Liu Liu, *et al.* (2026). Single-Cell Gene Expression and Dental Hard Tissue Disease: A Mendelian Randomization Study. *Journal of Dental Research* [Under Review].
 2. Liu, L., *et al.* (2024). Genetically Supported Drug Targets and Dental Traits: A Mendelian Randomization Study. *Journal of Dental Research*. [https://doi.org/10.1177/00220345241272045](https://doi.org/10.1177/00220345241272045)
 
 **sc-eQTL Data Sources & Methodological Foundations:**
