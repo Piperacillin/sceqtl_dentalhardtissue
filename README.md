@@ -11,10 +11,10 @@
 > The manuscript detailing this single-cell MR analytical framework and its extensive findings is currently **under review** at the *Journal of Dental Research (JDR)*. The full datasets and detailed extended results described in the Appendix are generated using the following pipeline.
 
 ## 👥 Authors and Affiliations
-**Tianyi Wang<sup>1,2†</sup>, Qi Xing<sup>1,3†</sup>, Liu Liu<sup>1,3,*</sup>, Yongwen Guo<sup>1,2</sup>, Yang Song<sup>1</sup>, Dingming Huang<sup>1,3</sup>, Lan Zhang<sup>1,3,*</sup>**
+**Tianyi Wang<sup>1,2†</sup>, Qi Xing<sup>1,3†</sup>, Liu Liu<sup>1,3,#</sup>, Yongwen Guo<sup>1,2</sup>, Yang Song<sup>1</sup>, Dingming Huang<sup>1,3</sup>, Lan Zhang<sup>1,3,#</sup>**
 
 <sup>†</sup> These authors contributed equally to this article.  
-<sup>*</sup> **Correspondence:** Prof. Lan Zhang (zlnancy914@sina.com) and Dr. Liu Liu (liul@scu.edu.cn, Twitter: @LiuLiu_DDS).  
+<sup>#</sup> **Correspondence:** Prof. Lan Zhang (zlnancy914@sina.com) and Dr. Liu Liu (liul@scu.edu.cn, Twitter: @LiuLiu_DDS).  
 
 <sup>1</sup> *State Key Laboratory of Oral Diseases & National Center for Stomatology & National Clinical Research Center for Oral Diseases, West China Hospital of Stomatology, Sichuan University, Chengdu 610041, China*
 <sup>2</sup> *Department of Orthodontics, West China Hospital of Stomatology, Sichuan University.*  
